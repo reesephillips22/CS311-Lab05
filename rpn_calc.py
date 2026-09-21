@@ -23,25 +23,25 @@ class Stack(Generic[T]):
 
     def __init__(self) -> None:
         # TODO: internal storage (a Python list is fine as the backing store).
-        raise NotImplementedError
+        self._items = []
 
     def push(self, item: T) -> None:
         # TODO
-        raise NotImplementedError
+        self._items.append(item)
 
     def pop(self) -> T:
         """Remove and return the top item. Raise IndexError if empty."""
         # TODO
-        raise NotImplementedError
+        return self._items.pop()
 
     def peek(self) -> T:
         """Return (without removing) the top item. Raise IndexError if empty."""
         # TODO
-        raise NotImplementedError
+        return self._items[-1]
 
     def is_empty(self) -> bool:
         # TODO
-        raise NotImplementedError
+        return len(self._items) == 0
 
 
 def evaluate_postfix(expression: str) -> float:
@@ -51,9 +51,43 @@ def evaluate_postfix(expression: str) -> float:
     malformed input -- too many operators, division by zero, etc.
     """
     # TODO
-    raise NotImplementedError
+    stack = Stack()
+    tokens = expression.split()
 
+    for token in tokens:
+        if token not in "+-*/":
+            try:
+                stack.push(float(token))
+            except ValueError:
+                raise ValueError("Invalid token!")
+        else:
+            try:
+                right = stack.pop()
+                left = stack.pop()
+            except IndexError:
+                raise ValueError("Not enough operands!")
+            
+            if token == "+":
+                result = left + right
+            elif token == "-":
+                result = left - right
+            elif token == "*":
+                result = left * right
+            elif token == "/":
+                if right == 0:
+                    raise ValueError("Cannot divide a number by zero!")
+                result = left / right
 
+            stack.push(result)
+
+    if stack.is_empty():
+        raise ValueError("Expression has no result")
+    result = stack.pop()
+    if not stack.is_empty():
+        raise ValueError("Too many operands!")
+
+    return result
+        
 def is_balanced(expression: str) -> bool:
     """
     Return True if all of (), [], {} in `expression` are correctly
@@ -62,7 +96,26 @@ def is_balanced(expression: str) -> bool:
     returning False -- never raise.
     """
     # TODO
-    raise NotImplementedError
+    stack = Stack()
+
+    pairs = {
+        ")" : "(",
+        "]" : "[",
+        "}" : "{",
+    }
+
+    for char in expression:
+        if char in "([{":
+            stack.push(char)
+
+        elif char in ")]}":
+            if stack.is_empty():
+                return False
+            
+            if stack.pop() != pairs[char]:
+                return False
+
+    return stack.is_empty()
 
 
 # ============================== VERIFICATION SUITE ==============================
